@@ -727,7 +727,8 @@
       if (pinValue.length === 4) {
         setTimeout(() => {
           if (pinValue === PIN) {
-            closePinScreen();
+            // PIN認証成功時はメイン画面を非表示のまま履歴へ遷移
+            document.getElementById('screen-pin').classList.remove('active');
             openHistory();
           } else {
             document.getElementById('pinError').textContent = 'PINコードが違います';
