@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <title>受付</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    :root {
+      --color-visitor: #2563eb;
+      --color-visitor-active: #1d4ed8;
+      --color-delivery: #16a34a;
+      --color-delivery-active: #15803d;
+      --color-disabled: #9ca3af;
+      --color-bg: #f1f5f9;
+      --color-surface: #ffffff;
+      --color-text: #1e293b;
+      --color-subtext: #64748b;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    body {
+      font-family: -apple-system, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text);
+    }
+
+    /* ======== メイン画面 ======== */
+    #screen-main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100dvh;
+      gap: 0;
+      padding: 32px 24px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .header h1 {
+      font-size: clamp(18px, 3.5vw, 30px);
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      color: var(--color-subtext);
+    }
+
+    .header h2 {
+      font-size: clamp(28px, 6vw, 48px);
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--color-text);
+      margin-top: 4px;
+    }
+
+    .clock {
+      font-size: clamp(18px, 3.5vw, 28px);
+      font-weight: 400;
+      color: var(--color-subtext);
+      margin-top: 8px;
+    }
+
+    .business-hours-badge {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: clamp(13px, 2vw, 16px);
+      font-weight: 600;
+    }
+
+    .business-hours-badge.open {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .business-hours-badge.closed {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 32px;
+      width: 100%;
+      max-width: 720px;
+    }
+
+    .btn-reception {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 48px 24px;
+      border: none;
+      border-radius: 24px;
+      background: var(--color-surface);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s, background 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+    }
+
+    .btn-reception:active:not(:disabled) {
+      transform: scale(0.96);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    }
+
+    .btn-reception:disabled {
+      cursor: default;
+      opacity: 0.45;
+    }
+
+    .btn-visitor {
+      border-top: 6px solid var(--color-visitor);
+    }
+    .btn-visitor:not(:disabled) .btn-icon { color: var(--color-visitor); }
+    .btn-visitor:not(:disabled) .btn-label { color: var(--color-visitor); }
+
+    .btn-delivery {
+      border-top: 6px solid var(--color-delivery);
+    }
+    .btn-delivery:not(:disabled) .btn-icon { color: var(--color-delivery); }
+    .btn-delivery:not(:disabled) .btn-label { color: var(--color-delivery); }
+
+    .btn-icon {
+      font-size: clamp(48px, 10vw, 80px);
+      line-height: 1;
+    }
+
+    .btn-label {
+      font-size: clamp(22px, 4.5vw, 36px);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .btn-sub {
+      font-size: clamp(12px, 2vw, 16px);
+      color: var(--color-subtext);
+    }
+
+    /* フィードバックオーバーレイ */
+    .feedback-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      background: rgba(0,0,0,0.45);
+    }
+
+    .feedback-overlay.show {
+      display: flex;
+    }
+
+    .feedback-card {
+      background: white;
+      border-radius: 24px;
+      padding: 48px 64px;
+      text-align: center;
+      box-shadow: 0 8px 48px rgba(0,0,0,0.2);
+    }
+
+    .feedback-card .feedback-icon {
+      font-size: 72px;
+      line-height: 1;
+    }
+
+    .feedback-card .feedback-text {
+      font-size: clamp(20px, 4vw, 32px);
+      font-weight: 700;
+      margin-top: 16px;
+    }
+
+    /* 履歴ボタン（右下固定） */
+    .btn-history-open {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: rgba(255,255,255,0.85);
+      border: 1px solid #e2e8f0;
+      border-radius: 999px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--color-subtext);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    /* ======== PIN画面 ======== */
+    #screen-pin {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100dvh;
+      background: var(--color-bg);
+      padding: 24px;
+    }
+
+    #screen-pin.active {
+      display: flex;
+    }
+
+    .pin-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+
+    .pin-dots {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .pin-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--color-subtext);
+      background: transparent;
+      transition: background 0.1s;
+    }
+
+    .pin-dot.filled {
+      background: var(--color-text);
+      border-color: var(--color-text);
+    }
+
+    .pin-error {
+      color: #dc2626;
+      font-size: 14px;
+      min-height: 20px;
+      margin-bottom: 16px;
+    }
+
+    .pin-keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .pin-key {
+      aspect-ratio: 1;
+      border: none;
+      border-radius: 50%;
+      background: white;
+      font-size: clamp(24px, 5vw, 32px);
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: background 0.1s, transform 0.1s;
+    }
+
+    .pin-key:active {
+      background: #e2e8f0;
+      transform: scale(0.92);
+    }
+
+    .pin-key.empty {
+      background: transparent;
+      box-shadow: none;
+      pointer-events: none;
+    }
+
+    .pin-key.delete {
+      font-size: 20px;
+      color: var(--color-subtext);
+    }
+
+    .pin-cancel {
+      margin-top: 24px;
+      background: none;
+      border: none;
+      color: var(--color-subtext);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 8px 16px;
+    }
+
+    /* ======== 履歴画面 ======== */
+    #screen-history {
+      display: none;
+      flex-direction: column;
+      height: 100dvh;
+      background: var(--color-bg);
+    }
+
+    #screen-history.active {
+      display: flex;
+    }
+
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      flex-shrink: 0;
+    }
+
+    .history-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .btn-close-history {
+      background: none;
+      border: none;
+      font-size: 16px;
+      color: var(--color-subtext);
+      cursor: pointer;
+      padding: 8px 12px;
+    }
+
+    .history-filters {
+      display: flex;
+      gap: 8px;
+      padding: 12px 24px;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      flex-shrink: 0;
+      overflow-x: auto;
+    }
+
+    .filter-btn {
+      padding: 6px 16px;
+      border-radius: 999px;
+      border: 1px solid #e2e8f0;
+      background: white;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.1s, color 0.1s;
+    }
+
+    .filter-btn.active {
+      background: var(--color-text);
+      color: white;
+      border-color: var(--color-text);
+    }
+
+    .history-list {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 16px 24px;
+    }
+
+    .history-date-group {
+      margin-bottom: 24px;
+    }
+
+    .history-date-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-subtext);
+      margin-bottom: 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    .history-type-badge {
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-visitor {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .badge-delivery {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .history-time {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--color-text);
+    }
+
+    .history-empty {
+      text-align: center;
+      color: var(--color-subtext);
+      padding: 64px 0;
+      font-size: 16px;
+    }
+
+    .history-footer {
+      padding: 12px 24px;
+      background: white;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: flex-end;
+      flex-shrink: 0;
+    }
+
+    .btn-clear-history {
+      background: none;
+      border: 1px solid #fca5a5;
+      color: #dc2626;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== メイン画面 ===== -->
+  <div id="screen-main">
+    <div class="header">
+      <h1>株式会社ジエンジサービス</h1>
+      <h2>いらっしゃいませ</h2>
+      <div class="clock" id="clock">--:--</div>
+      <span class="business-hours-badge" id="businessBadge">--</span>
+    </div>
+
+    <div class="buttons">
+      <button class="btn-reception btn-visitor" id="btnVisitor" onclick="handleReception('visitor')">
+        <span class="btn-icon">🧑‍💼</span>
+        <span class="btn-label">来客</span>
+        <span class="btn-sub">ご来客の方はこちら</span>
+      </button>
+
+      <button class="btn-reception btn-delivery" id="btnDelivery" onclick="handleReception('delivery')">
+        <span class="btn-icon">📦</span>
+        <span class="btn-label">配達</span>
+        <span class="btn-sub">お荷物の方はこちら</span>
+      </button>
+    </div>
+
+    <button class="btn-history-open" onclick="openPinScreen()">履歴 🔒</button>
+  </div>
+
+  <!-- ===== フィードバックオーバーレイ ===== -->
+  <div class="feedback-overlay" id="feedbackOverlay">
+    <div class="feedback-card">
+      <div class="feedback-icon" id="feedbackIcon"></div>
+      <div class="feedback-text" id="feedbackText"></div>
+    </div>
+  </div>
+
+  <!-- ===== PIN入力画面 ===== -->
+  <div id="screen-pin">
+    <div class="pin-title">PINコードを入力</div>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+    </div>
+    <div class="pin-error" id="pinError"></div>
+    <div class="pin-keypad">
+      <button class="pin-key" onclick="pinInput('1')">1</button>
+      <button class="pin-key" onclick="pinInput('2')">2</button>
+      <button class="pin-key" onclick="pinInput('3')">3</button>
+      <button class="pin-key" onclick="pinInput('4')">4</button>
+      <button class="pin-key" onclick="pinInput('5')">5</button>
+      <button class="pin-key" onclick="pinInput('6')">6</button>
+      <button class="pin-key" onclick="pinInput('7')">7</button>
+      <button class="pin-key" onclick="pinInput('8')">8</button>
+      <button class="pin-key" onclick="pinInput('9')">9</button>
+      <button class="pin-key empty"></button>
+      <button class="pin-key" onclick="pinInput('0')">0</button>
+      <button class="pin-key delete" onclick="pinDelete()">⌫</button>
+    </div>
+    <button class="pin-cancel" onclick="closePinScreen()">キャンセル</button>
+  </div>
+
+  <!-- ===== 履歴画面 ===== -->
+  <div id="screen-history">
+    <div class="history-header">
+      <h2>受付履歴</h2>
+      <button class="btn-close-history" onclick="closeHistory()">✕ 閉じる</button>
+    </div>
+    <div class="history-filters">
+      <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">すべて</button>
+      <button class="filter-btn" data-filter="visitor" onclick="setFilter('visitor', this)">来客</button>
+      <button class="filter-btn" data-filter="delivery" onclick="setFilter('delivery', this)">配達</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
+    <div class="history-footer">
+      <button class="btn-clear-history" onclick="clearHistory()">履歴を全件削除</button>
+    </div>
+  </div>
+
+  <script>
+    // ===== 定数 =====
+    const PIN = '1234';
+    const STORAGE_KEY = 'reception_history';
+    const SPEECH_TEXT = {
+      visitor:  'いらっしゃいませ。担当者をお呼びいたします。少々お待ちください。',
+      delivery: 'お荷物のお届けありがとうございます。担当者をお呼びいたします。',
+    };
+    const BUSINESS_START = { h: 9,  m: 0  };
+    const BUSINESS_END   = { h: 18, m: 30 };
+
+    // ===== 状態 =====
+    let pinValue = '';
+    let currentFilter = 'all';
+    let feedbackTimer = null;
+
+    // AudioContext は一度だけ生成して使い回す（iOS制限対応）
+    let audioCtx = null;
+
+    // iOS Safari で voiceschanged が発火した後に使えるボイスをキャッシュ
+    let cachedJaVoice = null;
+    if (window.speechSynthesis) {
+      const pickJaVoice = () => {
+        const v = speechSynthesis.getVoices().find(v => v.lang.startsWith('ja'));
+        if (v) cachedJaVoice = v;
+      };
+      speechSynthesis.addEventListener('voiceschanged', pickJaVoice);
+      pickJaVoice(); // 既にロード済みの場合に備えて即時試行
+    }
+
+    // ===== 時計・営業時間 =====
+    function updateClock() {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('clock').textContent = `${hh}:${mm}`;
+
+      const isOpen = isBusinessHours(now);
+      const badge = document.getElementById('businessBadge');
+      badge.textContent = isOpen ? '営業時間内' : '営業時間外（9:00〜18:30）';
+      badge.className = `business-hours-badge ${isOpen ? 'open' : 'closed'}`;
+
+      document.getElementById('btnVisitor').disabled = !isOpen;
+      document.getElementById('btnDelivery').disabled = !isOpen;
+    }
+
+    function isBusinessHours(date) {
+      const totalMin = date.getHours() * 60 + date.getMinutes();
+      const startMin = BUSINESS_START.h * 60 + BUSINESS_START.m;
+      const endMin   = BUSINESS_END.h   * 60 + BUSINESS_END.m;
+      return totalMin >= startMin && totalMin < endMin;
+    }
+
+    // ===== AudioContext の初期化・再開 =====
+    // iOS Safari はユーザー操作のコールスタック内で resume() しないと音が出ない
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      // suspended 状態（iOS Safari の自動停止）を即座に解除する
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    // ===== 受付処理 =====
+    function handleReception(type) {
+      saveRecord(type);
+      showFeedback(type);
+
+      // AudioContext の解除とチャイム再生はユーザー操作のコールスタック内で行う
+      const ctx = getAudioContext();
+      const totalMs = scheduleSound(ctx, type);
+
+      // 音声合成も同じコールスタック内で speak() を呼ぶ（iOS Safari の制約）
+      // チャイムと合成音声を同時に開始し、重ならないよう合成は遅延させる
+      speakAfter(type, totalMs);
+    }
+
+    // ===== 通知音（Web Audio API）=====
+    function scheduleSound(ctx, type) {
+      let totalMs = 0;
+      try {
+        if (type === 'visitor') {
+          // 来客：ドアチャイム風（ピンポン）4音、残響あり
+          playTone(ctx, 783.99, 0.0,  1.0, 'sine', 0.5);  // G5
+          playTone(ctx, 659.25, 1.1,  1.0, 'sine', 0.5);  // E5
+          playTone(ctx, 523.25, 2.2,  1.0, 'sine', 0.5);  // C5
+          playTone(ctx, 587.33, 3.3,  1.4, 'sine', 0.5);  // D5（余韻）
+          totalMs = 4800;
+        } else {
+          // 配達：注意喚起ブザー3連打、しっかり響く
+          playTone(ctx, 880, 0.0, 0.4, 'square', 0.35); // A5
+          playTone(ctx, 880, 0.6, 0.4, 'square', 0.35);
+          playTone(ctx, 880, 1.2, 0.7, 'square', 0.35);
+          totalMs = 2000;
+        }
+      } catch (e) {
+        // 音声非対応環境では無視
+      }
+      return totalMs;
+    }
+
+    // ===== 音声読み上げ（Web Speech API）=====
+    function speakAfter(type, delayMs) {
+      if (!window.speechSynthesis) return;
+
+      speechSynthesis.cancel();
+
+      // iOS Safari では setTimeout 内の speak() はユーザー操作のスタックを外れるため無視される。
+      // 代わりに無音 utterance をキューに積んでチャイム分の時間を稼ぎ、
+      // 続けて本文 utterance を積むことでユーザー操作スタック内に収める。
+      if (delayMs > 0) {
+        const silence = new SpeechSynthesisUtterance(' ');
+        silence.lang   = 'ja-JP';
+        silence.volume = 0;
+        silence.rate   = Math.max(0.1, 1000 / Math.max(delayMs, 100));
+        speechSynthesis.speak(silence);
+      }
+
+      const utter = new SpeechSynthesisUtterance(SPEECH_TEXT[type]);
+      utter.lang   = 'ja-JP';
+      utter.rate   = 0.88;
+      utter.pitch  = 1.0;
+      utter.volume = 1.0;
+      if (cachedJaVoice) utter.voice = cachedJaVoice;
+
+      speechSynthesis.speak(utter);
+    }
+
+    function playTone(ctx, freq, startTime, duration, type, volume = 0.3) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = type;
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(volume, ctx.currentTime + startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration);
+      osc.start(ctx.currentTime + startTime);
+      osc.stop(ctx.currentTime + startTime + duration + 0.05);
+    }
+
+    // ===== フィードバック表示 =====
+    function showFeedback(type) {
+      const overlay = document.getElementById('feedbackOverlay');
+      document.getElementById('feedbackIcon').textContent = type === 'visitor' ? '🧑‍💼' : '📦';
+      document.getElementById('feedbackText').textContent = type === 'visitor'
+        ? 'ただいまご案内いたします'
+        : 'お荷物を確認いたします';
+
+      overlay.classList.add('show');
+      clearTimeout(feedbackTimer);
+      feedbackTimer = setTimeout(() => overlay.classList.remove('show'), 2500);
+    }
+
+    // ===== 履歴保存 =====
+    function saveRecord(type) {
+      const records = loadRecords();
+      records.unshift({ type, time: new Date().toISOString() });
+      // 最大500件保持
+      if (records.length > 500) records.length = 500;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    }
+
+    function loadRecords() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    // ===== PIN画面 =====
+    function openPinScreen() {
+      pinValue = '';
+      updatePinDots();
+      document.getElementById('pinError').textContent = '';
+      document.getElementById('screen-main').style.display = 'none';
+      document.getElementById('screen-pin').classList.add('active');
+    }
+
+    function closePinScreen() {
+      document.getElementById('screen-pin').classList.remove('active');
+      document.getElementById('screen-main').style.display = 'flex';
+    }
+
+    function pinInput(digit) {
+      if (pinValue.length >= 4) return;
+      pinValue += digit;
+      updatePinDots();
+
+      if (pinValue.length === 4) {
+        setTimeout(() => {
+          if (pinValue === PIN) {
+            closePinScreen();
+            openHistory();
+          } else {
+            document.getElementById('pinError').textContent = 'PINコードが違います';
+            pinValue = '';
+            updatePinDots();
+          }
+        }, 150);
+      }
+    }
+
+    function pinDelete() {
+      pinValue = pinValue.slice(0, -1);
+      updatePinDots();
+      document.getElementById('pinError').textContent = '';
+    }
+
+    function updatePinDots() {
+      const dots = document.querySelectorAll('.pin-dot');
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('filled', i < pinValue.length);
+      });
+    }
+
+    // ===== 履歴画面 =====
+    function openHistory() {
+      currentFilter = 'all';
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.filter === 'all');
+      });
+      renderHistory();
+      document.getElementById('screen-history').classList.add('active');
+    }
+
+    function closeHistory() {
+      document.getElementById('screen-history').classList.remove('active');
+      document.getElementById('screen-main').style.display = 'flex';
+    }
+
+    function setFilter(filter, btn) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const records = loadRecords();
+      const filtered = currentFilter === 'all'
+        ? records
+        : records.filter(r => r.type === currentFilter);
+
+      const list = document.getElementById('historyList');
+
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="history-empty">履歴はありません</div>';
+        return;
+      }
+
+      // 日付でグループ化
+      const groups = {};
+      filtered.forEach(r => {
+        const d = new Date(r.time);
+        const key = formatDate(d);
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(r);
+      });
+
+      list.innerHTML = Object.entries(groups).map(([date, items]) => `
+        <div class="history-date-group">
+          <div class="history-date-label">${date}</div>
+          ${items.map(r => {
+            const d = new Date(r.time);
+            const t = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+            const label = r.type === 'visitor' ? '来客' : '配達';
+            const cls   = r.type === 'visitor' ? 'badge-visitor' : 'badge-delivery';
+            return `
+              <div class="history-item">
+                <span class="history-type-badge ${cls}">${label}</span>
+                <span class="history-time">${t}</span>
+              </div>`;
+          }).join('')}
+        </div>
+      `).join('');
+    }
+
+    function formatDate(d) {
+      const y = d.getFullYear();
+      const m = d.getMonth() + 1;
+      const day = d.getDate();
+      const wd = ['日','月','火','水','木','金','土'][d.getDay()];
+      return `${y}年${m}月${day}日（${wd}）`;
+    }
+
+    function clearHistory() {
+      if (!confirm('履歴を全件削除しますか？')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      renderHistory();
+    }
+
+    // ===== 初期化 =====
+    updateClock();
+    setInterval(updateClock, 10000);
+  </script>
+</body>
+</html>
