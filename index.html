@@ -16,15 +16,15 @@
     }
 
     :root {
-      --color-visitor: #2563eb;
-      --color-visitor-active: #1d4ed8;
-      --color-delivery: #16a34a;
-      --color-delivery-active: #15803d;
+      /* ビジネス向けのニュートラルパレット（紺・グレー基調） */
+      --color-accent: #1f2937;       /* メインのアクセント（チャコール） */
+      --color-accent-soft: #374151;
+      --color-line: #e5e7eb;         /* 罫線・境界線 */
       --color-disabled: #9ca3af;
-      --color-bg: #f1f5f9;
+      --color-bg: #f7f8fa;           /* 画面背景（ほぼ白に近いグレー） */
       --color-surface: #ffffff;
-      --color-text: #1e293b;
-      --color-subtext: #64748b;
+      --color-text: #111827;
+      --color-subtext: #6b7280;
     }
 
     html, body {
@@ -37,6 +37,7 @@
       font-family: -apple-system, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
       background: var(--color-bg);
       color: var(--color-text);
+      -webkit-font-smoothing: antialiased;
     }
 
     /* ======== メイン画面 ======== */
@@ -52,56 +53,71 @@
 
     .header {
       text-align: center;
-      margin-bottom: 48px;
+      margin-bottom: 56px;
     }
 
     .header h1 {
-      font-size: clamp(18px, 3.5vw, 30px);
-      font-weight: 500;
-      letter-spacing: 0.05em;
+      font-size: clamp(13px, 2vw, 18px);
+      font-weight: 600;
+      letter-spacing: 0.16em;
       color: var(--color-subtext);
+      text-transform: none;
     }
 
     .header h2 {
-      font-size: clamp(28px, 6vw, 48px);
-      font-weight: 700;
-      letter-spacing: 0.05em;
+      font-size: clamp(26px, 5vw, 42px);
+      font-weight: 600;
+      letter-spacing: 0.08em;
       color: var(--color-text);
-      margin-top: 4px;
+      margin-top: 10px;
     }
 
     .clock {
-      font-size: clamp(18px, 3.5vw, 28px);
+      font-size: clamp(16px, 3vw, 24px);
       font-weight: 400;
       color: var(--color-subtext);
-      margin-top: 8px;
+      margin-top: 14px;
+      letter-spacing: 0.08em;
+      font-variant-numeric: tabular-nums;
     }
 
     .business-hours-badge {
-      display: inline-block;
-      margin-top: 12px;
-      padding: 4px 14px;
-      border-radius: 999px;
-      font-size: clamp(13px, 2vw, 16px);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      padding: 5px 16px;
+      border-radius: 6px;
+      font-size: clamp(12px, 1.8vw, 14px);
       font-weight: 600;
+      letter-spacing: 0.04em;
+      border: 1px solid var(--color-line);
+      background: var(--color-surface);
+      color: var(--color-subtext);
     }
 
-    .business-hours-badge.open {
-      background: #dcfce7;
-      color: #15803d;
+    .business-hours-badge::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-disabled);
     }
 
-    .business-hours-badge.closed {
-      background: #fee2e2;
-      color: #b91c1c;
+    .business-hours-badge.open::before {
+      background: #16a34a;
+    }
+
+    .business-hours-badge.closed::before {
+      background: #9ca3af;
     }
 
     .buttons {
       display: flex;
       flex-direction: row;
-      gap: 32px;
+      gap: 24px;
       width: 100%;
-      max-width: 720px;
+      max-width: 760px;
     }
 
     .btn-reception {
@@ -110,54 +126,56 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 16px;
-      padding: 48px 24px;
-      border: none;
-      border-radius: 24px;
+      gap: 18px;
+      padding: 56px 28px;
+      border: 1px solid var(--color-line);
+      border-radius: 10px;
       background: var(--color-surface);
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      box-shadow: 0 1px 2px rgba(17,24,39,0.04);
       cursor: pointer;
-      transition: transform 0.1s, box-shadow 0.1s, background 0.2s;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
       -webkit-tap-highlight-color: transparent;
       outline: none;
     }
 
     .btn-reception:active:not(:disabled) {
-      transform: scale(0.96);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      transform: translateY(1px);
+      border-color: var(--color-accent);
+      box-shadow: 0 1px 2px rgba(17,24,39,0.06);
     }
 
     .btn-reception:disabled {
       cursor: default;
-      opacity: 0.45;
+      opacity: 0.5;
+      background: var(--color-bg);
     }
-
-    .btn-visitor {
-      border-top: 6px solid var(--color-visitor);
-    }
-    .btn-visitor:not(:disabled) .btn-icon { color: var(--color-visitor); }
-    .btn-visitor:not(:disabled) .btn-label { color: var(--color-visitor); }
-
-    .btn-delivery {
-      border-top: 6px solid var(--color-delivery);
-    }
-    .btn-delivery:not(:disabled) .btn-icon { color: var(--color-delivery); }
-    .btn-delivery:not(:disabled) .btn-label { color: var(--color-delivery); }
 
     .btn-icon {
-      font-size: clamp(48px, 10vw, 80px);
-      line-height: 1;
+      color: var(--color-accent);
+      line-height: 0;
+    }
+
+    .btn-reception:disabled .btn-icon {
+      color: var(--color-disabled);
+    }
+
+    .btn-icon svg {
+      width: clamp(48px, 9vw, 64px);
+      height: clamp(48px, 9vw, 64px);
+      display: block;
     }
 
     .btn-label {
-      font-size: clamp(22px, 4.5vw, 36px);
-      font-weight: 700;
-      letter-spacing: 0.04em;
+      font-size: clamp(20px, 4vw, 30px);
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--color-text);
     }
 
     .btn-sub {
-      font-size: clamp(12px, 2vw, 16px);
+      font-size: clamp(12px, 1.8vw, 15px);
       color: var(--color-subtext);
+      letter-spacing: 0.02em;
     }
 
     /* フィードバックオーバーレイ */
@@ -176,22 +194,30 @@
     }
 
     .feedback-card {
-      background: white;
-      border-radius: 24px;
+      background: var(--color-surface);
+      border-radius: 12px;
       padding: 48px 64px;
       text-align: center;
-      box-shadow: 0 8px 48px rgba(0,0,0,0.2);
+      box-shadow: 0 12px 48px rgba(17,24,39,0.18);
     }
 
     .feedback-card .feedback-icon {
-      font-size: 72px;
-      line-height: 1;
+      color: var(--color-accent);
+      line-height: 0;
+    }
+
+    .feedback-card .feedback-icon svg {
+      width: 56px;
+      height: 56px;
+      display: block;
+      margin: 0 auto;
     }
 
     .feedback-card .feedback-text {
-      font-size: clamp(20px, 4vw, 32px);
-      font-weight: 700;
-      margin-top: 16px;
+      font-size: clamp(18px, 3.5vw, 26px);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      margin-top: 20px;
     }
 
     /* 履歴ボタン（右下固定） */
@@ -199,16 +225,24 @@
       position: fixed;
       bottom: 24px;
       right: 24px;
-      background: rgba(255,255,255,0.85);
-      border: 1px solid #e2e8f0;
-      border-radius: 999px;
-      padding: 10px 20px;
-      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-line);
+      border-radius: 8px;
+      padding: 9px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.03em;
       color: var(--color-subtext);
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 1px 2px rgba(17,24,39,0.04);
+    }
+
+    .btn-history-open svg {
+      width: 15px;
+      height: 15px;
     }
 
     /* ======== PIN画面 ======== */
@@ -227,9 +261,11 @@
     }
 
     .pin-title {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 24px;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      margin-bottom: 28px;
+      color: var(--color-text);
     }
 
     .pin-dots {
@@ -239,17 +275,17 @@
     }
 
     .pin-dot {
-      width: 18px;
-      height: 18px;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
-      border: 2px solid var(--color-subtext);
+      border: 1.5px solid var(--color-disabled);
       background: transparent;
-      transition: background 0.1s;
+      transition: background 0.1s, border-color 0.1s;
     }
 
     .pin-dot.filled {
-      background: var(--color-text);
-      border-color: var(--color-text);
+      background: var(--color-accent);
+      border-color: var(--color-accent);
     }
 
     .pin-error {
@@ -269,19 +305,21 @@
 
     .pin-key {
       aspect-ratio: 1;
-      border: none;
-      border-radius: 50%;
-      background: white;
-      font-size: clamp(24px, 5vw, 32px);
-      font-weight: 600;
+      border: 1px solid var(--color-line);
+      border-radius: 10px;
+      background: var(--color-surface);
+      font-size: clamp(22px, 4.5vw, 28px);
+      font-weight: 500;
+      color: var(--color-text);
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      transition: background 0.1s, transform 0.1s;
+      box-shadow: 0 1px 2px rgba(17,24,39,0.04);
+      transition: background 0.1s, transform 0.1s, border-color 0.1s;
     }
 
     .pin-key:active {
-      background: #e2e8f0;
-      transform: scale(0.92);
+      background: var(--color-bg);
+      border-color: var(--color-accent);
+      transform: scale(0.96);
     }
 
     .pin-key.empty {
@@ -321,51 +359,56 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 20px 24px;
-      background: white;
-      border-bottom: 1px solid #e2e8f0;
+      padding: 18px 24px;
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-line);
       flex-shrink: 0;
     }
 
     .history-header h2 {
-      font-size: 20px;
-      font-weight: 700;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
     }
 
     .btn-close-history {
       background: none;
-      border: none;
-      font-size: 16px;
+      border: 1px solid var(--color-line);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
       color: var(--color-subtext);
       cursor: pointer;
-      padding: 8px 12px;
+      padding: 7px 14px;
     }
 
     .history-filters {
       display: flex;
       gap: 8px;
       padding: 12px 24px;
-      background: white;
-      border-bottom: 1px solid #e2e8f0;
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-line);
       flex-shrink: 0;
       overflow-x: auto;
     }
 
     .filter-btn {
       padding: 6px 16px;
-      border-radius: 999px;
-      border: 1px solid #e2e8f0;
-      background: white;
-      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid var(--color-line);
+      background: var(--color-surface);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-subtext);
       cursor: pointer;
       white-space: nowrap;
-      transition: background 0.1s, color 0.1s;
+      transition: background 0.1s, color 0.1s, border-color 0.1s;
     }
 
     .filter-btn.active {
-      background: var(--color-text);
-      color: white;
-      border-color: var(--color-text);
+      background: var(--color-accent);
+      color: #fff;
+      border-color: var(--color-accent);
     }
 
     .history-list {
@@ -380,12 +423,13 @@
     }
 
     .history-date-label {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
+      letter-spacing: 0.04em;
       color: var(--color-subtext);
       margin-bottom: 8px;
-      padding-bottom: 4px;
-      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--color-line);
     }
 
     .history-item {
@@ -393,7 +437,7 @@
       align-items: center;
       gap: 12px;
       padding: 12px 0;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--color-line);
     }
 
     .history-item:last-child {
@@ -401,27 +445,42 @@
     }
 
     .history-type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       padding: 4px 12px;
-      border-radius: 999px;
-      font-size: 13px;
+      border-radius: 6px;
+      font-size: 12px;
       font-weight: 600;
+      letter-spacing: 0.03em;
       white-space: nowrap;
+      border: 1px solid var(--color-line);
+    }
+
+    .history-type-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
     }
 
     .badge-visitor {
-      background: #dbeafe;
-      color: #1d4ed8;
+      color: var(--color-text);
+      background: var(--color-surface);
     }
+    .badge-visitor::before { background: #2563eb; }
 
     .badge-delivery {
-      background: #dcfce7;
-      color: #15803d;
+      color: var(--color-text);
+      background: var(--color-surface);
     }
+    .badge-delivery::before { background: #6b7280; }
 
     .history-time {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 500;
       color: var(--color-text);
+      font-variant-numeric: tabular-nums;
     }
 
     .history-empty {
@@ -433,8 +492,8 @@
 
     .history-footer {
       padding: 12px 24px;
-      background: white;
-      border-top: 1px solid #e2e8f0;
+      background: var(--color-surface);
+      border-top: 1px solid var(--color-line);
       display: flex;
       justify-content: flex-end;
       flex-shrink: 0;
@@ -442,12 +501,19 @@
 
     .btn-clear-history {
       background: none;
-      border: 1px solid #fca5a5;
-      color: #dc2626;
+      border: 1px solid var(--color-line);
+      color: var(--color-subtext);
       padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
       cursor: pointer;
+      transition: border-color 0.1s, color 0.1s;
+    }
+
+    .btn-clear-history:active {
+      border-color: #dc2626;
+      color: #dc2626;
     }
   </style>
 </head>
@@ -464,19 +530,36 @@
 
     <div class="buttons">
       <button class="btn-reception btn-visitor" id="btnVisitor" onclick="handleReception('visitor')">
-        <span class="btn-icon">🧑‍💼</span>
+        <span class="btn-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M4 21v-1a8 8 0 0 1 16 0v1"/>
+          </svg>
+        </span>
         <span class="btn-label">来客</span>
         <span class="btn-sub">ご来客の方はこちら</span>
       </button>
 
       <button class="btn-reception btn-delivery" id="btnDelivery" onclick="handleReception('delivery')">
-        <span class="btn-icon">📦</span>
+        <span class="btn-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <path d="M3.27 6.96 12 12l8.73-5.04"/>
+            <path d="M12 22V12"/>
+          </svg>
+        </span>
         <span class="btn-label">配達</span>
         <span class="btn-sub">お荷物の方はこちら</span>
       </button>
     </div>
 
-    <button class="btn-history-open" onclick="openPinScreen()">履歴 🔒</button>
+    <button class="btn-history-open" onclick="openPinScreen()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="11" width="14" height="10" rx="2"/>
+        <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+      </svg>
+      履歴
+    </button>
   </div>
 
   <!-- ===== フィードバックオーバーレイ ===== -->
@@ -518,7 +601,7 @@
   <div id="screen-history">
     <div class="history-header">
       <h2>受付履歴</h2>
-      <button class="btn-close-history" onclick="closeHistory()">✕ 閉じる</button>
+      <button class="btn-close-history" onclick="closeHistory()">閉じる</button>
     </div>
     <div class="history-filters">
       <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">すべて</button>
@@ -693,9 +776,15 @@
     }
 
     // ===== フィードバック表示 =====
+    // フィードバックカードのSVGアイコン（受付ボタンと同じラインアイコン）
+    const FEEDBACK_ICON = {
+      visitor: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>',
+      delivery: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12l8.73-5.04"/><path d="M12 22V12"/></svg>',
+    };
+
     function showFeedback(type) {
       const overlay = document.getElementById('feedbackOverlay');
-      document.getElementById('feedbackIcon').textContent = type === 'visitor' ? '🧑‍💼' : '📦';
+      document.getElementById('feedbackIcon').innerHTML = FEEDBACK_ICON[type];
       document.getElementById('feedbackText').textContent = type === 'visitor'
         ? 'ただいまご案内いたします'
         : 'お荷物を確認いたします';
