@@ -550,12 +550,28 @@
     // AudioContext は一度だけ生成して使い回す（iOS制限対応）
     let audioCtx = null;
 
-    // iOS Safari で voiceschanged が発火した後に使えるボイスをキャッシュ
+    // iOS Safari で voiceschanged が発火した後に使えるボイスをキャッシュ。
+    // 「日本語を喋る外国人」のような不自然な発音を避けるため、
+    // 日本語ネイティブの高品質ボイスを優先的に選ぶ。
     let cachedJaVoice = null;
     if (window.speechSynthesis) {
+      // 高品質な日本語ボイスの名前（端末ごとに搭載されるもの）。前にあるほど優先。
+      // Kyoko を最優先（iPad・Mac の標準日本語ボイス）。なければ各端末の代替を使う。
+      const PREFERRED_JA_VOICES = ['Kyoko', 'Otoya', 'O-ren', 'Hattori', 'Google 日本語'];
+
       const pickJaVoice = () => {
-        const v = speechSynthesis.getVoices().find(v => v.lang.startsWith('ja'));
-        if (v) cachedJaVoice = v;
+        const jaVoices = speechSynthesis.getVoices().filter(v => v.lang.startsWith('ja'));
+        if (jaVoices.length === 0) return;
+
+        // ① 名前で優先ボイスを探す（最も自然な発音）
+        for (const name of PREFERRED_JA_VOICES) {
+          const v = jaVoices.find(v => v.name.includes(name));
+          if (v) { cachedJaVoice = v; return; }
+        }
+        // ② 端末内蔵（localService）のボイスを優先（オンラインの低品質音声を避ける）
+        const local = jaVoices.find(v => v.localService);
+        // ③ どれもなければ最初の日本語ボイスにフォールバック
+        cachedJaVoice = local || jaVoices[0];
       };
       speechSynthesis.addEventListener('voiceschanged', pickJaVoice);
       pickJaVoice(); // 既にロード済みの場合に備えて即時試行
@@ -654,8 +670,9 @@
 
       const utter = new SpeechSynthesisUtterance(SPEECH_TEXT[type]);
       utter.lang   = 'ja-JP';
-      utter.rate   = 0.88;
-      utter.pitch  = 1.0;
+      // Kyoko を少し速めに（say -r 200 相当）。自然な抑揚に寄せる。
+      utter.rate   = 1.1;
+      utter.pitch  = 1.05;
       utter.volume = 1.0;
       if (cachedJaVoice) utter.voice = cachedJaVoice;
 
